@@ -1,154 +1,59 @@
-import axios from "axios";
-import { ImageGalleryItem } from "components/ImageGalleryItem/ImageGalleryItem";
 import { Component } from "react";
-import { RevolvingDot } from "react-loader-spinner";
-import { Button } from "components/Button/Button";
-import { toast } from "react-toastify";
+import { Gallery } from "./ImageGallery.styled";
+import PropTypes from 'prop-types';
+
+import { ImageGalleryItem, Modal} from "components";
 
 export class ImageGallery extends Component {
 
-    state = {
-        images: [],
-        status: 'idle',
-        page: 1
+    static propTypes = {
+        images: PropTypes.arrayOf(PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            webformatURL: PropTypes.string.isRequired,
+            tags: PropTypes.string.isRequired,
+            largeImageURL: PropTypes.string.isRequired
+        })).isRequired
     }
 
-    onNextPage = () => {
-        this.setState((prevState) => ({
-            page: prevState.page += 1
+    state = {
+        showModal: false,
+        showLikes: false,
+        activeIndex: 0,
+    }
+
+    toggleModal = () => {
+        this.setState(({showModal}) => ({
+            showModal: !showModal
         }))
     }
 
-    async componentDidUpdate(prevProps, prevState) {
-        const {searchQuery} = this.props
-        const {page} = this.state
-        const isQueryNew = prevProps.searchQuery !== this.props.searchQuery
-        const isPageNew = prevState.page !== this.state.page
-        
-        if(isQueryNew || isPageNew) 
-        {this.setState({ status: 'pending' });
-        
+    changeActiveIndex = (index) => {
+        this.setState({
+            activeIndex: index
+        })
+    }
 
-        const response = await axios.get(`https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=32346607-2f4a4184af58487b859814685&image_type=photo&orientation=horizontal&per_page=12`)
-        const images = response.data.hits
-
-        if(isQueryNew || isPageNew) {
-            if(images.length === 0) {
-                    this.setState({
-                    status: 'rejected',
-                })
-                    toast('No matches')
-            }
-        
-            if (isQueryNew) {
-                this.setState({
-                status: 'resolved',
-                images,
-                page: 1
-            })
-            }
-            
-            if (isPageNew) {
-                this.setState({
-                    status: 'resolved',
-                    images
-                })
-            }
-        }
-        }
-}
-    
     render () {
-        const {images, status} = this.state
-        console.log('state', this.state.page)
-        console.log('props', this.props.page)
+    const {images} = this.props
+    const {activeIndex, showModal} = this.state
+    const currentImage = images[activeIndex]
 
-        if (status === 'pending') {
-            return <RevolvingDot/> 
-        }
-
-        if (status === 'resolved') {
-            return (
+        return (
             <>
-                <ul className="gallery"> 
-                    {images.map(({id, webformatURL, tags}) => {
-                        return <ImageGalleryItem key={id} link={webformatURL} tag={tags}/>
+                {<Gallery className="gallery"> 
+                    {images.map(({id, webformatURL, tags}, index) => {
+                        return <ImageGalleryItem key={id} link={webformatURL} tag={tags} onClick={() => { 
+                                    this.toggleModal()
+                                    this.changeActiveIndex(index)
+                                }}/>
+                               
                     })}
-                </ul>
-                <Button onClick={this.onNextPage}/>
-            </>)
-        }
+                </Gallery>}
+                {showModal && <Modal image={currentImage.largeImageURL} tags={currentImage.tags} onClose={this.toggleModal}/>}
+            </>
+        )
     }
 }
 
 
 
-
-
-
-
-// async componentDidUpdate(prevProps) {
-//     const {searchQuery} = this.props
-//     const {page} = this.state
-//     const isQueryNew = prevProps.searchQuery !== this.props.searchQuery
-    
-//     if(isQueryNew) this.setState({ isLoading: true });
-
-//     const response = await axios.get(`https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=32346607-2f4a4184af58487b859814685&image_type=photo&orientation=horizontal&per_page=12`)
-//     const images = response.data.hits
-
-//     if(isQueryNew) {
-//         if(images.length === 0) {
-//                 this.setState({
-//                 isLoading: false,
-//             })
-//                 toast('No matches')
-//         }
-    
-//         this.setState({
-//             isLoading: false,
-//             images
-//         })
-//     }
-// }
-
-
-// const {searchQuery} = this.props
-//         const {page} = this.state
-
-//         if(prevState.page !== this.state.page || prevProps.searchQuery !== this.props.searchQuery) {
-//             this.setState({ status: 'pending' })
-
-//         if(prevProps.searchQuery !== this.props.searchQuery) {
-//             this.setState({page: 1 })
-//         }
-            
-//             fetch(`https://pixabay.com/api/?q=${searchQuery}&page=${page}&key=32346607-2f4a4184af58487b859814685&image_type=photo&orientation=horizontal&per_page=12`)
-//             .then(res => res.json())
-//             .then(data => {
-//                 const images = data.hits
-//                 console.log(data.hits)
-            
-//                 if (prevProps.searchQuery !== this.props.searchQuery) {
-//                     this.setState({
-//                         images: images
-//                     })
-//                 }
-
-//                 if(images.length === 0) {
-//                     this.setState({
-//                         status: 'idle'
-//                     })
-//                     toast('No matches')
-//                     return
-//                 }
-
-//                 if(prevState.page !== this.state.page) {
-                    
-//                 }
-//                     this.setState({
-//                         status: 'resolved',
-//                         images: images
-//                     })
-//             })
-//         }

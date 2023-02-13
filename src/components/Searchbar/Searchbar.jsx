@@ -1,6 +1,16 @@
 import { Component } from "react";
+import {AiOutlineSearch} from 'react-icons/ai'
+import PropTypes from 'prop-types';
+
+
+import { Container, Form, Input, Button} from "./Searchbar.styled";
 
 export class Searchbar extends Component {
+
+    static propTypes = {
+        onSubmit: PropTypes.func.isRequired
+    }
+
     state = {
         inputValue: '',
     }
@@ -14,15 +24,19 @@ export class Searchbar extends Component {
     }
 
     render () {
+        const {onSubmit} = this.props
+        const {inputValue} = this.state
+        
         return (
-            <header className="searchbar">
-                <form className="form" onSubmit={(e) => this.props.onSubmit(e, this.state.inputValue.trim())}>
-                    <button type="submit" className="button">
+            <Container className="searchbar" >
+                <Form className="form" onSubmit={(e) => onSubmit(e, inputValue.trim())}>
+                    <Button type="submit" className="button">
                     <span className="button-label">Search</span>
-                    </button>
+                    <AiOutlineSearch size={20}/>
+                    </Button>
 
-                    <input
-                    value={this.state.inputValue}
+                    <Input
+                    value={inputValue}
                     onChange={this.onInputChange}
                     className="input"
                     type="text"
@@ -30,8 +44,8 @@ export class Searchbar extends Component {
                     autoFocus
                     placeholder="Search images and photos"
                     />
-                </form>
-            </header>
+                </Form>
+            </Container>
         )
     }
 }
